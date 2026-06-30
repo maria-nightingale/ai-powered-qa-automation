@@ -4,15 +4,16 @@ import { defineConfig, devices } from '@playwright/test';
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: './tests',
+  testDir: '.',
+  testMatch: ['tests/**/*.spec.ts', 'TODO_MVC/**/*.spec.ts'],
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -25,8 +26,7 @@ export default defineConfig({
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Base URL to use in actions like `await page.goto('')`. */
-    // baseURL: 'http://localhost:3000',
+    baseURL: process.env.DIDAXIS_URL ?? process.env.BASE_URL,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -35,17 +35,38 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
+      name: 'setup',
+      testMatch: /auth\.setup\.ts/,
+    },
+    {
+      name: 'ds-1',
+      testMatch: /tests\/ds1-create-program\.spec\.ts/,
+      fullyParallel: false,
+      workers: 1,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/admin.json',
+      },
+      dependencies: ['setup'],
+    },
+    {
       name: 'chromium',
+      testMatch: ['tests/**/*.spec.ts', 'TODO_MVC/**/*.spec.ts'],
+      testIgnore: ['tests/ds1-create-program.spec.ts', 'tests/DS-1/**/*.spec.ts', '**/*.setup.ts'],
       use: { ...devices['Desktop Chrome'] },
     },
 
     {
       name: 'firefox',
+      testMatch: ['tests/**/*.spec.ts', 'TODO_MVC/**/*.spec.ts'],
+      testIgnore: ['tests/ds1-create-program.spec.ts', 'tests/DS-1/**/*.spec.ts', '**/*.setup.ts'],
       use: { ...devices['Desktop Firefox'] },
     },
 
     {
       name: 'webkit',
+      testMatch: ['tests/**/*.spec.ts', 'TODO_MVC/**/*.spec.ts'],
+      testIgnore: ['tests/ds1-create-program.spec.ts', 'tests/DS-1/**/*.spec.ts', '**/*.setup.ts'],
       use: { ...devices['Desktop Safari'] },
     },
 
