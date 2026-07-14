@@ -8,6 +8,18 @@ You are a senior QA engineer reviewing the feature described below.
 
 Create a detailed test plan for the "Edit existing program details" feature.
 
+## Jira Ticket
+
+- **Key:** [DS-2](https://legionqaschool.atlassian.net/browse/DS-2)
+- **Summary:** Edit existing program details
+- **Type:** Story | **Status:** To Do | **Priority:** High
+- **Labels:** `mvp`, `program-setup`
+- **Project:** Didaxis Studio (DS)
+
+## User Story
+
+As an admin user, I want to edit an existing program's details so that I can correct or update program information after creation.
+
 ## Acceptance Criteria
 
 Scenario: Open program for editing

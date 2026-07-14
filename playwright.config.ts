@@ -30,6 +30,7 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
   },
 
   /* Configure projects for major browsers */
@@ -50,23 +51,49 @@ export default defineConfig({
       dependencies: ['setup'],
     },
     {
+      name: 'ds-2',
+      testMatch: /tests\/ds2-edit-program\.spec\.ts/,
+      fullyParallel: false,
+      workers: 1,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/admin.json',
+      },
+      dependencies: ['setup'],
+    },
+    {
       name: 'chromium',
       testMatch: ['tests/**/*.spec.ts', 'TODO_MVC/**/*.spec.ts'],
-      testIgnore: ['tests/ds1-create-program.spec.ts', 'tests/DS-1/**/*.spec.ts', '**/*.setup.ts'],
+      testIgnore: [
+        'tests/ds1-create-program.spec.ts',
+        'tests/ds2-edit-program.spec.ts',
+        'tests/DS-1/**/*.spec.ts',
+        '**/*.setup.ts',
+      ],
       use: { ...devices['Desktop Chrome'] },
     },
 
     {
       name: 'firefox',
       testMatch: ['tests/**/*.spec.ts', 'TODO_MVC/**/*.spec.ts'],
-      testIgnore: ['tests/ds1-create-program.spec.ts', 'tests/DS-1/**/*.spec.ts', '**/*.setup.ts'],
+      testIgnore: [
+        'tests/ds1-create-program.spec.ts',
+        'tests/ds2-edit-program.spec.ts',
+        'tests/DS-1/**/*.spec.ts',
+        '**/*.setup.ts',
+      ],
       use: { ...devices['Desktop Firefox'] },
     },
 
     {
       name: 'webkit',
       testMatch: ['tests/**/*.spec.ts', 'TODO_MVC/**/*.spec.ts'],
-      testIgnore: ['tests/ds1-create-program.spec.ts', 'tests/DS-1/**/*.spec.ts', '**/*.setup.ts'],
+      testIgnore: [
+        'tests/ds1-create-program.spec.ts',
+        'tests/ds2-edit-program.spec.ts',
+        'tests/DS-1/**/*.spec.ts',
+        '**/*.setup.ts',
+      ],
       use: { ...devices['Desktop Safari'] },
     },
 

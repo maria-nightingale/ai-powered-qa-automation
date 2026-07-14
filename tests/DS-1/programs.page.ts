@@ -5,6 +5,7 @@ export class ProgramsPage {
   readonly programNameInput: Locator;
   readonly descriptionInput: Locator;
   readonly createButton: Locator;
+  readonly saveButton: Locator;
   readonly cancelButton: Locator;
   readonly newProgramButton: Locator;
   readonly dialog: Locator;
@@ -13,11 +14,13 @@ export class ProgramsPage {
     this.dialog = page.getByRole('dialog');
     this.programNameInput = this.dialog
       .getByLabel('Program Name')
+      .or(this.dialog.getByLabel(/^Name$/i))
       .or(this.dialog.getByPlaceholder('e.g. Computer Science BSc'));
     this.descriptionInput = this.dialog
       .getByLabel('Description')
       .or(this.dialog.getByPlaceholder('Brief description'));
     this.createButton = this.dialog.getByRole('button', { name: 'Create' });
+    this.saveButton = this.dialog.getByRole('button', { name: 'Save' });
     this.cancelButton = this.dialog.getByRole('button', { name: 'Cancel' });
     this.newProgramButton = page.getByRole('button', { name: /new program/i });
   }
@@ -90,5 +93,62 @@ export class ProgramsPage {
 
   async expectValidationMessage(pattern: RegExp): Promise<void> {
     await expect(this.dialog.getByText(pattern)).toBeVisible();
+  }
+
+  programRow(name: string): Locator {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return this.page
+      .getByRole('row', { name: new RegExp(escaped) })
+      .or(this.page.locator('tr').filter({ has: this.page.getByText(name, { exact: true }) }));
+  }
+
+  editButtonForProgram(name: string): Locator {
+    const row = this.programRow(name);
+    return row
+      .getByRole('button', { name: /edit/i })
+      .or(row.locator('[aria-label*="Edit" i]'))
+      .or(row.locator('button').filter({ has: this.page.locator('svg') }).last());
+  }
+
+  async openEditForm(programName: string): Promise<void> {
+    await this.expectProgramInList(programName);
+    await this.editButtonForProgram(programName).first().click();
+    await expect(this.dialog).toBeVisible();
+    await expect(this.programNameInput).toBeVisible();
+    await expect(this.saveButton).toBeVisible();
+  }
+
+  async expectEditFormPrefilled(name: string, description: string): Promise<void> {
+    await expect(this.programNameInput).toHaveValue(name);
+    await expect(this.descriptionInput).toHaveValue(description);
+  }
+
+  async fillEditForm(name?: string, description?: string): Promise<void> {
+    if (name !== undefined) {
+      await this.programNameInput.fill(name);
+    }
+    if (description !== undefined) {
+      await this.descriptionInput.fill(description);
+    }
+  }
+
+  async saveEdit(): Promise<void> {
+    await this.saveButton.click();
+  }
+
+  async saveEditAndClose(): Promise<void> {
+    await this.saveButton.click();
+    await expect(this.dialog).toBeHidden({ timeout: 15_000 });
+  }
+
+  async expectSaveDisabled(): Promise<void> {
+    await expect(this.saveButton).toBeDisabled();
+  }
+
+  async expectProgramDescription(name: string, description: string): Promise<void> {
+    await this.openEditForm(name);
+    await expect(this.descriptionInput).toHaveValue(description);
+    await this.cancelButton.click();
+    await expect(this.dialog).toBeHidden();
   }
 }

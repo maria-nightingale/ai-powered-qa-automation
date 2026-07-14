@@ -1,8 +1,13 @@
 # Test Plan: Edit Existing Program Details
 
+**Jira:** [DS-2](https://legionqaschool.atlassian.net/browse/DS-2) — Edit existing program details  
 **Feature:** Edit existing program details  
+**Type:** Story | **Status:** To Do | **Priority:** High  
+**Labels:** `mvp`, `program-setup`  
+**User story:** As an admin user, I want to edit an existing program's details so that I can correct or update program information after creation.  
 **Prepared by:** QA  
-**Scope:** Program edit form, pre-population, save behavior, field preservation, and program list update
+**Scope:** Program edit form, pre-population, save behavior, field preservation, and program list update  
+**Last synced with Jira:** 2026-07-07
 
 ---
 
@@ -54,7 +59,7 @@ Scenario: Admin successfully edits a program name
   And the program list does not show "Web Development 2026"
 ```
 
-**Expected result:** Form closes; list updates without page refresh; old name is replaced by **Web Development 2026 - Updated**.
+**Expected result:** Form closes; list updates without page refresh; old name is replaced by **Web Development 2026 - Updated**; no stale row or cached label for the previous name remains visible.
 
 **Priority:** High
 
@@ -540,7 +545,7 @@ Scenario: Concurrent edit conflict is detected or last-write wins with clear beh
 
 1. **Field naming inconsistency:** Create flow uses **Program Name**; edit flow uses **Name**. Confirm whether these are the same field in the UI and API.
 2. **Pre-populated fields scope:** AC says "program's current data" but only Name and Description are implied. Clarify whether other fields (status, dates, IDs) appear in the edit form.
-3. **Login/role requirement:** Open-for-edit AC does not specify admin login; assumed from DS-1 context — confirm required roles (TC-009).
+3. **Login/role requirement:** User story specifies an admin user; open-for-edit AC does not repeat admin login — confirm non-admin behavior (TC-009).
 4. **Description edit-only scenario:** AC does not specify the program name or before/after Description values used in TC-003.
 5. **Cancel / unsaved changes:** No AC for discarding edits or confirming navigation away with dirty form (TC-005).
 6. **Validation rules:** No AC for empty Name, whitespace-only Name, or max-length on edit (TC-006, TC-007, TC-013, TC-014).
@@ -552,3 +557,20 @@ Scenario: Concurrent edit conflict is detected or last-write wins with clear beh
 12. **Error handling:** No AC for API/network failures during save (TC-011).
 13. **Concurrent edits:** No AC for two users editing the same program simultaneously (TC-020).
 14. **Modal vs page:** AC references modal closing; confirm edit is always modal-based.
+15. **List staleness after save:** [DS-9](https://legionqaschool.atlassian.net/browse/DS-9) (blocks DS-2) reports stale program list data after a name edit; AC requires the list to update immediately (TC-002).
+16. **Duplicate name on edit:** Multiple linked bugs (e.g. DS-11, DS-37, DS-38) report missing or unclear uniqueness validation when renaming — confirm expected UX (TC-008).
+17. **Max-length validation on edit:** Linked bugs (e.g. DS-15, DS-39, DS-42) report missing or inconsistent enforcement above 255 characters — confirm limit and error behavior (TC-013, TC-014).
+18. **Double-submit on Save:** Linked bugs (e.g. DS-23, DS-41, DS-43) report duplicate PATCH requests or a stuck modal on double-click — confirm single-save guard (TC-019).
+
+---
+
+## Jira Linked Issues
+
+| Key | Relationship | Summary | Related tests |
+|---|---|---|---|
+| [DS-9](https://legionqaschool.atlassian.net/browse/DS-9) | Blocks DS-2 | Program list shows stale data after editing program name | TC-002 |
+| [DS-10](https://legionqaschool.atlassian.net/browse/DS-10) | Relates | DS-2 TC-003 Playwright flake: updating only Description preserves Program Name | TC-003 |
+| [DS-11](https://legionqaschool.atlassian.net/browse/DS-11) | Relates | Duplicate name rejected on Save but no visible error | TC-008 |
+| [DS-15](https://legionqaschool.atlassian.net/browse/DS-15) | Relates | Over-limit Program Name (256 chars) — original program row missing after Save | TC-014 |
+| [DS-23](https://legionqaschool.atlassian.net/browse/DS-23) | Relates | Rapid double-click Save sends duplicate PATCH on Edit Program | TC-019 |
+| [DS-31](https://legionqaschool.atlassian.net/browse/DS-31) | Relates | Edit Program does not enforce unique name or max-length validation | TC-008, TC-013, TC-014 |
