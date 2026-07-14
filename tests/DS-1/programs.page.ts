@@ -1,4 +1,5 @@
 import { expect, Locator, Page } from '@playwright/test';
+import { extractProgramId } from '../../fixtures/program-api';
 import { env } from './env';
 
 export class ProgramsPage {
@@ -64,11 +65,33 @@ export class ProgramsPage {
     await this.descriptionInput.fill(description);
   }
 
-  async createProgram(name: string, description = ''): Promise<void> {
+  async submitCreateForm(): Promise<string | undefined> {
+    const createResponse = this.page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/programs') && response.request().method() === 'POST',
+    );
+    await this.createButton.click();
+    const response = await createResponse;
+
+    if (!response.ok()) {
+      return undefined;
+    }
+
+    return extractProgramId(await response.json());
+  }
+
+  async createProgram(name: string, description = ''): Promise<string> {
     await this.openNewProgramForm();
     await this.fillProgramForm(name, description);
-    await this.createButton.click();
+
+    const uuid = await this.submitCreateForm();
     await expect(this.dialog).toBeHidden({ timeout: 15_000 });
+
+    if (!uuid) {
+      throw new Error('Program created but UUID missing from POST response');
+    }
+
+    return uuid;
   }
 
   programInList(name: string): Locator {
