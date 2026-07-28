@@ -102,7 +102,7 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await programs.expectProgramInList(programName);
     });
 
-    test.only('TC-008 — Duplicate program name is rejected on edit', async ({ trackProgram }) => {
+    test('TC-008 — Duplicate program name is rejected on edit', async ({ trackProgram }) => {
       const existingName = uniqueName('Web Development 2026');
       const programToRename = uniqueName('Game Development 2026');
 
