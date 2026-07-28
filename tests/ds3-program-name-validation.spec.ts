@@ -1,6 +1,6 @@
 import { test, expect } from '../fixtures/cleanup.fixture';
 import { ProgramsPage } from '../pages/ProgramsPage';
-import { uniqueName } from './support/test-data';
+import { uniqueName } from '../utils/test-input';
 
 test.describe('DS-3 Program name validation and duplicate prevention', () => {
   let programsPage: ProgramsPage;

@@ -13,7 +13,7 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
  */
 export default defineConfig({
   testDir: '.',
-  testMatch: ['tests/**/*.spec.ts', 'TODO_MVC/**/*.spec.ts'],
+  testMatch: ['tests/**/*.spec.ts'],
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -74,7 +74,7 @@ export default defineConfig({
     },
     {
       name: 'chromium',
-      testMatch: ['tests/**/*.spec.ts', 'TODO_MVC/**/*.spec.ts'],
+      testMatch: ['tests/**/*.spec.ts'],
       testIgnore: [
         'tests/ds1-create-program.spec.ts',
         'tests/ds2-edit-program.spec.ts',
@@ -90,7 +90,7 @@ export default defineConfig({
 
     {
       name: 'firefox',
-      testMatch: ['tests/**/*.spec.ts', 'TODO_MVC/**/*.spec.ts'],
+      testMatch: ['tests/**/*.spec.ts'],
       testIgnore: [
         'tests/ds1-create-program.spec.ts',
         'tests/ds2-edit-program.spec.ts',
@@ -102,7 +102,7 @@ export default defineConfig({
 
     {
       name: 'webkit',
-      testMatch: ['tests/**/*.spec.ts', 'TODO_MVC/**/*.spec.ts'],
+      testMatch: ['tests/**/*.spec.ts'],
       testIgnore: [
         'tests/ds1-create-program.spec.ts',
         'tests/ds2-edit-program.spec.ts',

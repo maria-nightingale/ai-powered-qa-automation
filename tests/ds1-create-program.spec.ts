@@ -1,8 +1,9 @@
 import { test, expect } from '../fixtures/cleanup.fixture';
 import { extractProgramId } from '../fixtures/program-api';
 import { ProgramsPage } from '../pages/ProgramsPage';
+import { LoginPage } from '../pages/LoginPage';
 import { env } from '../config/env';
-import { repeatChar, uniqueName } from './support/test-data';
+import { repeatChar, uniqueName } from '../utils/test-input';
 
 test.describe('DS-1 Create New Academic Program', () => {
   let programsPage: ProgramsPage;
@@ -240,20 +241,14 @@ test.describe('DS-1 Non-admin access', () => {
       'Skipped: no non-admin credentials in .env. Set DIDAXIS_INSTRUCTOR_EMAIL and DIDAXIS_INSTRUCTOR_PASSWORD to run this test.',
     );
 
-    await page.goto(`${env.url}/login`);
-    await page
-      .getByLabel('Email')
-      .or(page.getByPlaceholder('you@college.edu'))
-      .fill(env.nonAdminEmail);
-    await page
-      .getByLabel('Password')
-      .or(page.getByPlaceholder('Your password'))
-      .fill(env.nonAdminPassword);
-    await page.getByRole('button', { name: 'Sign In' }).click();
+    const loginPage = new LoginPage(page);
+
+    await loginPage.goto();
+    await loginPage.signIn(env.nonAdminEmail, env.nonAdminPassword);
     await expect(page).not.toHaveURL(/\/login$/);
 
     const programsPage = new ProgramsPage(page);
-    await page.goto(`${env.url}/programs`);
+    await programsPage.goto();
     await expect(programsPage.newProgramButton).toHaveCount(0);
   });
 });
@@ -262,12 +257,13 @@ test.describe('DS-1 Unauthenticated access', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test('TC-008 — Unauthenticated user cannot access program creation', async ({ page }) => {
+    const loginPage = new LoginPage(page);
     const programsPage = new ProgramsPage(page);
 
     await programsPage.goto();
 
     await expect(page).toHaveURL(/\/login/);
-    await expect(page.getByRole('button', { name: 'Sign In' })).toBeVisible();
+    await expect(loginPage.signInButton).toBeVisible();
     await expect(programsPage.newProgramButton).toHaveCount(0);
   });
 });

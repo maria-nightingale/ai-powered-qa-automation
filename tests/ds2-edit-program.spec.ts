@@ -1,7 +1,8 @@
 import { test, expect } from '../fixtures/cleanup.fixture';
 import { env } from '../config/env';
 import { ProgramsPage } from '../pages/ProgramsPage';
-import { repeatChar, uniqueName } from './support/test-data';
+import { LoginPage } from '../pages/LoginPage';
+import { repeatChar, uniqueName } from '../utils/test-input';
 
 test.describe('DS-2 Edit Existing Program Details', () => {
   let programs: ProgramsPage;
@@ -332,19 +333,14 @@ test.describe('DS-2 Non-admin access', () => {
       'Skipped: no non-admin credentials in .env. Set DIDAXIS_INSTRUCTOR_EMAIL and DIDAXIS_INSTRUCTOR_PASSWORD to run this test.',
     );
 
-    await page.goto(`${env.url}/login`);
-    await page
-      .getByLabel('Email')
-      .or(page.getByPlaceholder('you@college.edu'))
-      .fill(env.nonAdminEmail);
-    await page
-      .getByLabel('Password')
-      .or(page.getByPlaceholder('Your password'))
-      .fill(env.nonAdminPassword);
-    await page.getByRole('button', { name: 'Sign In' }).click();
+    const loginPage = new LoginPage(page);
+
+    await loginPage.goto();
+    await loginPage.signIn(env.nonAdminEmail, env.nonAdminPassword);
     await expect(page).not.toHaveURL(/\/login$/);
 
-    await page.goto(`${env.url}/programs`);
+    const programsPage = new ProgramsPage(page);
+    await programsPage.goto();
     await expect(page.getByRole('button', { name: /edit/i })).toHaveCount(0);
     await expect(page.locator('[aria-label*="Edit" i]')).toHaveCount(0);
   });
@@ -354,10 +350,13 @@ test.describe('DS-2 Unauthenticated access', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test('TC-010 — Unauthenticated user cannot access program edit', async ({ page }) => {
-    await page.goto(`${env.url}/programs`);
+    const loginPage = new LoginPage(page);
+    const programsPage = new ProgramsPage(page);
+
+    await programsPage.goto();
 
     await expect(page).toHaveURL(/\/login/);
-    await expect(page.getByRole('button', { name: 'Sign In' })).toBeVisible();
+    await expect(loginPage.signInButton).toBeVisible();
     await expect(page.getByRole('button', { name: /edit/i })).toHaveCount(0);
   });
 });
