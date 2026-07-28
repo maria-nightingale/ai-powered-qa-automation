@@ -37,7 +37,7 @@ export default defineConfig({
   projects: [
     {
       name: 'setup',
-      testMatch: /auth\.setup\.ts/,
+      testMatch: '**/*.setup.ts',
     },
     {
       name: 'ds-1',
@@ -70,7 +70,11 @@ export default defineConfig({
         'tests/DS-1/**/*.spec.ts',
         '**/*.setup.ts',
       ],
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
     },
 
     {

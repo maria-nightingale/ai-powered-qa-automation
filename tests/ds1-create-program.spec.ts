@@ -22,7 +22,7 @@ test.describe('DS-1 Create New Academic Program', () => {
     });
 
     test('TC-002 — New program is created and appears in the program list', async ({ trackProgram }) => {
-      const programName = uniqueName('Web Development 2026');
+      const programName = uniqueName('Web Development 2026_MASHA_TEST');
       const description = 'Full-stack web development program';
 
       trackProgram(await programs.createProgram(programName, description));
@@ -73,7 +73,7 @@ test.describe('DS-1 Create New Academic Program', () => {
     });
 
     test('TC-009 — Duplicate program name is rejected', async ({ trackProgram }) => {
-      const programName = uniqueName('Web Development 2026');
+      const programName = uniqueName('Web Development 2026_MASHA_TEST');
 
       trackProgram(await programs.createProgram(programName, 'Original program'));
       const countBefore = await programs.countProgramsNamed(programName);
