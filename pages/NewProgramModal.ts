@@ -6,6 +6,7 @@ export class NewProgramModal {
   readonly programNameInput: Locator;
   readonly descriptionInput: Locator;
   readonly createButton: Locator;
+  readonly saveButton: Locator;
   readonly cancelButton: Locator;
   readonly duplicateNameError: Locator;
 
@@ -16,6 +17,7 @@ export class NewProgramModal {
       .or(this.dialog.getByLabel(/^Name$/i));
     this.descriptionInput = this.dialog.getByLabel('Description');
     this.createButton = this.dialog.getByRole('button', { name: 'Create' });
+    this.saveButton = this.dialog.getByRole('button', { name: 'Save' });
     this.cancelButton = this.dialog.getByRole('button', { name: 'Cancel' });
     this.duplicateNameError = this.dialog.getByText(
       /already exists|already been used|must be unique|name is taken/i,

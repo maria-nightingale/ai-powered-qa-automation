@@ -1,8 +1,8 @@
 import { test, expect } from '../fixtures/cleanup.fixture';
 import { extractProgramId } from '../fixtures/program-api';
 import { ProgramsPage } from '../pages/ProgramsPage';
-import { env } from './DS-1/env';
-import { repeatChar, uniqueName } from './DS-1/test-data';
+import { env } from '../config/env';
+import { repeatChar, uniqueName } from './support/test-data';
 
 test.describe('DS-1 Create New Academic Program', () => {
   let programsPage: ProgramsPage;
@@ -84,10 +84,7 @@ test.describe('DS-1 Create New Academic Program', () => {
       await programsPage.openNewProgramForm();
       await modal.fill(programName, 'Second program with the same name');
 
-      const createResponse = programsPage.page.waitForResponse(
-        (response) =>
-          response.url().includes('/api/programs') && response.request().method() === 'POST',
-      );
+      const createResponse = programsPage.waitForProgramCreate();
       await modal.clickCreate();
       await createResponse;
 
@@ -208,12 +205,7 @@ test.describe('DS-1 Create New Academic Program', () => {
       await programsPage.openNewProgramForm();
       await modal.fill(programName, 'Distributed ledger technology program');
 
-      const createResponse = programsPage.page.waitForResponse(
-        (response) =>
-          response.url().includes('/api/programs') &&
-          response.request().method() === 'POST' &&
-          response.ok(),
-      );
+      const createResponse = programsPage.waitForSuccessfulProgramCreate();
       await modal.createButton.dblclick();
       const response = await createResponse;
       const uuid = extractProgramId(await response.json());

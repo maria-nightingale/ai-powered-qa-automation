@@ -1,14 +1,15 @@
 import { test, expect } from '../fixtures/cleanup.fixture';
-import { env } from './DS-1/env';
-import { ProgramsPage } from './DS-1/programs.page';
-import { repeatChar, uniqueName } from './DS-1/test-data';
+import { env } from '../config/env';
+import { ProgramsPage } from '../pages/ProgramsPage';
+import { repeatChar, uniqueName } from './support/test-data';
 
 test.describe('DS-2 Edit Existing Program Details', () => {
   let programs: ProgramsPage;
 
   test.beforeEach(async ({ page }) => {
     programs = new ProgramsPage(page);
-    await programs.openProgramsPage();
+    await programs.goto();
+    await expect(programs.newProgramButton).toBeVisible({ timeout: 15_000 });
   });
 
   test.describe('Positive flows', () => {
@@ -111,11 +112,7 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await programs.openEditForm(programToRename);
       await programs.fillEditForm(existingName);
 
-      const updateResponse = programs.page.waitForResponse(
-        (response) =>
-          response.url().includes('/api/programs') &&
-          ['PATCH', 'PUT'].includes(response.request().method()),
-      );
+      const updateResponse = programs.waitForProgramUpdate();
       await programs.saveButton.click();
       await updateResponse;
 
@@ -258,11 +255,7 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await programs.openEditForm(programName);
       await programs.fillEditForm(updatedName);
 
-      const updateResponse = programs.page.waitForResponse(
-        (response) =>
-          response.url().includes('/api/programs') &&
-          ['PATCH', 'PUT'].includes(response.request().method()),
-      );
+      const updateResponse = programs.waitForProgramUpdate();
       await programs.saveButton.dblclick();
       await updateResponse;
 
@@ -292,8 +285,8 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       const programsA = new ProgramsPage(pageA);
       const programsB = new ProgramsPage(pageB);
 
-      await programsA.openProgramsPage();
-      await programsB.openProgramsPage();
+      await programsA.goto();
+      await programsB.goto();
 
       await programsA.openEditForm(programName);
       await programsB.openEditForm(programName);

@@ -1,6 +1,6 @@
 import { test, expect } from '../fixtures/cleanup.fixture';
 import { ProgramsPage } from '../pages/ProgramsPage';
-import { uniqueName } from './DS-1/test-data';
+import { uniqueName } from './support/test-data';
 
 test.describe('DS-3 Program name validation and duplicate prevention', () => {
   let programsPage: ProgramsPage;
@@ -40,10 +40,7 @@ test.describe('DS-3 Program name validation and duplicate prevention', () => {
       await programsPage.openNewProgramForm();
       await modal.fill(programName, 'Second program with the same name');
 
-      const createResponse = programsPage.page.waitForResponse(
-        (response) =>
-          response.url().includes('/api/programs') && response.request().method() === 'POST',
-      );
+      const createResponse = programsPage.waitForProgramCreate();
       await modal.clickCreate();
       await createResponse;
 
@@ -74,10 +71,7 @@ test.describe('DS-3 Program name validation and duplicate prevention', () => {
       await programsPage.openNewProgramForm();
       await modal.fill(variantName, 'Case-variant duplicate attempt');
 
-      const createResponse = programsPage.page.waitForResponse(
-        (response) =>
-          response.url().includes('/api/programs') && response.request().method() === 'POST',
-      );
+      const createResponse = programsPage.waitForProgramCreate();
       await modal.clickCreate();
       await createResponse;
 
@@ -100,10 +94,7 @@ test.describe('DS-3 Program name validation and duplicate prevention', () => {
       await programsPage.openNewProgramForm();
       await modal.fill(`${programName}   `, 'Trailing-space duplicate attempt');
 
-      const createResponse = programsPage.page.waitForResponse(
-        (response) =>
-          response.url().includes('/api/programs') && response.request().method() === 'POST',
-      );
+      const createResponse = programsPage.waitForProgramCreate();
       await modal.clickCreate();
       await createResponse;
 
