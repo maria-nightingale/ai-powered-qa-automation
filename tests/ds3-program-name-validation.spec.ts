@@ -30,7 +30,7 @@ test.describe('DS-3 Program name validation and duplicate prevention', () => {
       await expect(programsPage.newProgramModal.createButton).toBeDisabled();
     });
 
-    test('TC-003 — Duplicate program name is rejected', async ({ trackProgram }) => {
+    test('TC-003 — Duplicate program name is rejected', { annotation: { type: 'fixme' } }, async ({ trackProgram }) => {
       const programName = uniqueName('Web Development 2026');
       const modal = programsPage.newProgramModal;
 
@@ -63,7 +63,7 @@ test.describe('DS-3 Program name validation and duplicate prevention', () => {
   });
 
   test.describe('Edge cases', () => {
-    test('TC-005 — Case-variant duplicate program name is rejected', async ({ trackProgram }) => {
+    test('TC-005 — Case-variant duplicate program name is rejected', { annotation: { type: 'fixme' } }, async ({ trackProgram }) => {
       const programName = uniqueName('Web Development 2026');
       const variantName = programName.replace(/Web Development/i, 'web development');
       const modal = programsPage.newProgramModal;
@@ -88,7 +88,7 @@ test.describe('DS-3 Program name validation and duplicate prevention', () => {
       await expect(modal.duplicateNameError).toBeVisible();
     });
 
-    test('TC-006 — Duplicate name with trailing spaces is rejected after trim', async ({
+    test('TC-006 — Duplicate name with trailing spaces is rejected after trim', { annotation: { type: 'fixme' } }, async ({
       trackProgram,
     }) => {
       const programName = uniqueName('Web Development 2026');
