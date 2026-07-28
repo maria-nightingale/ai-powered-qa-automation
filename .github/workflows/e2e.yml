@@ -27,7 +27,7 @@ jobs:
 
       - run: npx playwright install --with-deps chromium
 
-      - run: npx playwright test
+      - run: npx playwright test --project=setup --project=ds-1 --project=ds-2 --project=ds-3
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
