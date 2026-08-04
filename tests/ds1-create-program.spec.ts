@@ -75,7 +75,7 @@ test.describe('DS-1 Create New Academic Program', () => {
       await expect(programsPage.newProgramModal.createButton).toBeDisabled();
     });
 
-    test('TC-009 — Duplicate program name is rejected', { annotation: { type: 'fixme' } }, async ({ trackProgram }) => {
+    test('TC-009 — Duplicate program name is rejected', async ({ trackProgram }) => {
       const programName = uniqueName('Web Development 2026_MASHA_TEST');
       const modal = programsPage.newProgramModal;
 
@@ -199,7 +199,7 @@ test.describe('DS-1 Create New Academic Program', () => {
       await expect(programsPage.programInList(programName)).toHaveCount(0);
     });
 
-    test('TC-019 — Double-click on Create does not create duplicate programs', { annotation: { type: 'fixme' } }, async ({ trackProgram }) => {
+    test('TC-019 — Double-click on Create does not create duplicate programs', async ({ trackProgram }) => {
       const programName = uniqueName('Blockchain Fundamentals');
       const modal = programsPage.newProgramModal;
 
