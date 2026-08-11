@@ -1,14 +1,17 @@
 import { expect, Locator, Page } from '@playwright/test';
+import { DeleteProgramDialog } from './DeleteProgramDialog';
 import { NewProgramModal } from './NewProgramModal';
 
 export class ProgramsPage {
   readonly page: Page;
   readonly newProgramButton: Locator;
   readonly newProgramModal: NewProgramModal;
+  readonly deleteProgramDialog: DeleteProgramDialog;
 
   constructor(page: Page) {
     this.page = page;
     this.newProgramModal = new NewProgramModal(page);
+    this.deleteProgramDialog = new DeleteProgramDialog(page);
     this.newProgramButton = page.getByRole('button', { name: /new program/i });
   }
 
@@ -89,6 +92,35 @@ export class ProgramsPage {
       .or(row.locator('button').filter({ has: this.page.locator('svg') }).last());
   }
 
+  deleteButtonForProgram(name: string): Locator {
+    const row = this.programRow(name);
+    return row
+      .getByRole('button', { name: /delete/i })
+      .or(row.locator('[aria-label*="Delete" i]'));
+  }
+
+  async openDeleteConfirmation(programName: string): Promise<void> {
+    await this.expectProgramInList(programName);
+    await this.deleteButtonForProgram(programName).first().click();
+    await expect(this.deleteProgramDialog.dialog).toBeVisible();
+  }
+
+  async confirmDelete(): Promise<void> {
+    const deleteResponse = this.waitForProgramDelete();
+    await this.deleteProgramDialog.clickConfirm();
+    await deleteResponse;
+  }
+
+  async confirmDeleteAndClose(): Promise<void> {
+    await this.confirmDelete();
+    await expect(this.deleteProgramDialog.dialog).toBeHidden({ timeout: 15_000 });
+  }
+
+  async cancelDelete(): Promise<void> {
+    await this.deleteProgramDialog.clickCancel();
+    await expect(this.deleteProgramDialog.dialog).toBeHidden();
+  }
+
   async openEditForm(programName: string): Promise<void> {
     await this.expectProgramInList(programName);
     await this.editButtonForProgram(programName).first().click();
@@ -152,6 +184,13 @@ export class ProgramsPage {
         response.url().includes('/api/programs') &&
         response.request().method() === 'POST' &&
         response.ok(),
+    );
+  }
+
+  waitForProgramDelete() {
+    return this.page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/programs') && response.request().method() === 'DELETE',
     );
   }
 }

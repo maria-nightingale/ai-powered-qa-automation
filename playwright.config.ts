@@ -73,12 +73,24 @@ export default defineConfig({
       dependencies: ['setup'],
     },
     {
+      name: 'ds-4',
+      testMatch: /tests\/ds4-delete-program\.spec\.ts/,
+      fullyParallel: false,
+      workers: 1,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/admin.json',
+      },
+      dependencies: ['setup'],
+    },
+    {
       name: 'chromium',
       testMatch: ['tests/**/*.spec.ts'],
       testIgnore: [
         'tests/ds1-create-program.spec.ts',
         'tests/ds2-edit-program.spec.ts',
         'tests/ds3-program-name-validation.spec.ts',
+        'tests/ds4-delete-program.spec.ts',
         '**/*.setup.ts',
       ],
       use: {
@@ -95,6 +107,7 @@ export default defineConfig({
         'tests/ds1-create-program.spec.ts',
         'tests/ds2-edit-program.spec.ts',
         'tests/ds3-program-name-validation.spec.ts',
+        'tests/ds4-delete-program.spec.ts',
         '**/*.setup.ts',
       ],
       use: { ...devices['Desktop Firefox'] },
@@ -107,6 +120,7 @@ export default defineConfig({
         'tests/ds1-create-program.spec.ts',
         'tests/ds2-edit-program.spec.ts',
         'tests/ds3-program-name-validation.spec.ts',
+        'tests/ds4-delete-program.spec.ts',
         '**/*.setup.ts',
       ],
       use: { ...devices['Desktop Safari'] },
