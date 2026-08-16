@@ -1,6 +1,6 @@
 ---
-name: triage
 description: Diagnoses a red CI run against the repo and classifies the cause. Use whenever a build fails.
+name: triage
 model: composer-2.5[]
 readonly: true
 ---

@@ -7,12 +7,28 @@ export class ProgramsPage {
   readonly newProgramButton: Locator;
   readonly newProgramModal: NewProgramModal;
   readonly deleteProgramDialog: DeleteProgramDialog;
+  readonly programsListView: Locator;
+  readonly emptyStateMessage: Locator;
+  readonly emptyStateCreatePrompt: Locator;
+  readonly emptyStateSuccessMessage: Locator;
+  readonly programsLoadError: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.newProgramModal = new NewProgramModal(page);
     this.deleteProgramDialog = new DeleteProgramDialog(page);
     this.newProgramButton = page.getByRole('button', { name: /new program/i });
+    this.programsListView = page.getByRole('main');
+    this.emptyStateMessage = page.getByText(
+      /no programs (have been )?created|no programs yet|there are no programs/i,
+    );
+    this.emptyStateCreatePrompt = page
+      .getByRole('main')
+      .getByText(/create (your |the )?first program|get started|add your first program/i);
+    this.emptyStateSuccessMessage = this.emptyStateMessage;
+    this.programsLoadError = page
+      .getByRole('alert')
+      .or(page.getByText(/could not (be )?load|failed to load|unable to load|something went wrong|internal server error|error loading/i));
   }
 
   get dialog(): Locator {
