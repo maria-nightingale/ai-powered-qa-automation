@@ -242,26 +242,43 @@ const res = await fetch("https://hardcoded-host/api/programs", {
 
 ## 8. Network mocking
 
-**Standard:** `page.route` / `fulfill` (or abort) for **500** / **503** / **timeout** / empty / malformed; never mock the endpoint under test; observe real UI copy first; one tag per test.
+**Standard:** For programs-flow edge cases, prefer `page.route` / `route.fulfill`
+for deterministic API outcomes. **Before writing assertions**, open the real
+Programs page (Playwright MCP or agent-browser) and read the actual error /
+empty-state copy — do not invent strings; if the app renders nothing, say so.
+Never mock the endpoint the test is actually verifying. Route all interactions
+through POMs. One tag per test.
+
+**Required baseline cases** on `/api/programs` (observe UI first, then assert):
+
+| Case | Mock | Assert |
+|------|------|--------|
+| (a) Save failure | POST → **503** (also **500**) | UI error state via POM |
+| (b) Empty list | GET → **200** `[]` | Empty-state message via POM |
+| (c) Bad payload | GET/POST → **200** malformed body | App does not crash |
+| Also cover as plan requires | **401**, **403**, **404**, **501**, **502**, **300**, timeout | Observed UI (or note if none) |
 
 ```typescript
-// ✅ Good — advised shape (repo has abort-style TC-012; prefer fulfill + narrow URL)
+// ✅ Good — narrow route; POM assertions; copy observed on live UI first
 await page.route("**/api/programs**", async (route) => {
   if (route.request().method() === "POST") {
-    return route.fulfill({ status: 503, body: '{"error":"unavailable"}' });
+    return route.fulfill({ status: 503, contentType: "application/json", body: '{"message":"…"}' });
   }
   return route.continue();
 });
+const programsPage = new ProgramsPage(page);
+await programsPage.goto();
+await expect(programsPage.programsLoadError).toBeVisible(); // observed copy only
 ```
 
 ```typescript
 // ❌ Bad
 await page.route("**/*", (route) => route.abort()); // too broad; blinds the whole app
-// inventing toast text the app never shows
-await expect(page.getByText("Service Unavailable!!!")).toBeVisible();
+await expect(page.getByText("Service Unavailable!!!")).toBeVisible(); // invented copy
+await page.getByRole("button", { name: "Create" }).click(); // inline locator — use POM
 ```
 
-**Why:** Prevents non-deterministic live-API edge flakes and false failures from invented copy or over-broad routes. See `.cursor/skills/network-mocked-edge-cases/`.
+**Why:** Prevents non-deterministic live-API edge flakes and false failures from invented copy or over-broad routes. Full playbook: `.cursor/skills/network-mocked-edge-cases/`.
 
 ## 9. Accessibility
 

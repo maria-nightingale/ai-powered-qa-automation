@@ -73,6 +73,10 @@ Derive parent story `DS-N` from `test.describe` title or matching `features/DS-N
 
 - Locator/timeout/wait mismatch; flaky selector; missing `trackProgram` / cleanup
 - Expected value contradicts `features/*.feature`
+- Flaky **programs-flow API edge** test hitting live errors/empty/malformed data —
+  propose `page.route` per [network-mocked-edge-cases](../network-mocked-edge-cases/SKILL.md):
+  observe real UI copy via Playwright MCP or agent-browser before asserting;
+  never invent strings; never mock the endpoint under test; POMs only; one tag per test
 - Environment/setup (secrets, network) — note separately; do not file Jira unless user asks
 
 When uncertain, state both hypotheses and what evidence would decide.

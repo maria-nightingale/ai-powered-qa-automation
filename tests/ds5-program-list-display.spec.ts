@@ -158,7 +158,7 @@ test.describe('DS-5: Program list filtering and display', () => {
       await programsPage.expectProgramInList(programName);
 
       expect(dialogOpened).toBe(false);
-      await expect(programsPage.programRow(programName).locator('img')).toHaveCount(0);
+      await programsPage.expectProgramRowHasNoImages(programName);
       await expect(programsPage.programRow(programName)).toContainText('XSS probe');
     });
 
