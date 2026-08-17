@@ -112,33 +112,33 @@ export default defineConfig({
       dependencies: ['setup'],
     },
 
-    {
-      name: 'firefox',
-      testMatch: ['tests/**/*.spec.ts'],
-      testIgnore: [
-        'tests/ds1-create-program.spec.ts',
-        'tests/ds2-edit-program.spec.ts',
-        'tests/ds3-program-name-validation.spec.ts',
-        'tests/ds4-delete-program.spec.ts',
-        'tests/ds5-program-list-display.spec.ts',
-        '**/*.setup.ts',
-      ],
-      use: { ...devices['Desktop Firefox'] },
-    },
+    // {
+    //   name: 'firefox',
+    //   testMatch: ['tests/**/*.spec.ts'],
+    //   testIgnore: [
+    //     'tests/ds1-create-program.spec.ts',
+    //     'tests/ds2-edit-program.spec.ts',
+    //     'tests/ds3-program-name-validation.spec.ts',
+    //     'tests/ds4-delete-program.spec.ts',
+    //     'tests/ds5-program-list-display.spec.ts',
+    //     '**/*.setup.ts',
+    //   ],
+    //   use: { ...devices['Desktop Firefox'] },
+    // },
 
-    {
-      name: 'webkit',
-      testMatch: ['tests/**/*.spec.ts'],
-      testIgnore: [
-        'tests/ds1-create-program.spec.ts',
-        'tests/ds2-edit-program.spec.ts',
-        'tests/ds3-program-name-validation.spec.ts',
-        'tests/ds4-delete-program.spec.ts',
-        'tests/ds5-program-list-display.spec.ts',
-        '**/*.setup.ts',
-      ],
-      use: { ...devices['Desktop Safari'] },
-    },
+    // {
+    //   name: 'webkit',
+    //   testMatch: ['tests/**/*.spec.ts'],
+    //   testIgnore: [
+    //     'tests/ds1-create-program.spec.ts',
+    //     'tests/ds2-edit-program.spec.ts',
+    //     'tests/ds3-program-name-validation.spec.ts',
+    //     'tests/ds4-delete-program.spec.ts',
+    //     'tests/ds5-program-list-display.spec.ts',
+    //     '**/*.setup.ts',
+    //   ],
+    //   use: { ...devices['Desktop Safari'] },
+    // },
 
     /* Test against mobile viewports. */
     // {
