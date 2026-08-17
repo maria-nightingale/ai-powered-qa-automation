@@ -10,6 +10,7 @@ export class ProgramsPage {
   readonly programsListView: Locator;
   readonly emptyStateMessage: Locator;
   readonly emptyStateCreatePrompt: Locator;
+  readonly emptyStateCreateButton: Locator;
   readonly emptyStateSuccessMessage: Locator;
   readonly programsLoadError: Locator;
 
@@ -25,6 +26,7 @@ export class ProgramsPage {
     this.emptyStateCreatePrompt = page
       .getByRole('main')
       .getByText(/create (your |the )?first program|get started|add your first program/i);
+    this.emptyStateCreateButton = page.getByRole('button', { name: 'Create Program' });
     this.emptyStateSuccessMessage = this.emptyStateMessage;
     this.programsLoadError = page
       .getByRole('alert')
@@ -65,6 +67,14 @@ export class ProgramsPage {
     await this.newProgramButton.click();
   }
 
+  async openNewProgramFormFromEmptyState(): Promise<void> {
+    await this.emptyStateCreateButton.click();
+  }
+
+  async focusEmptyStateCreateButton(): Promise<void> {
+    await this.emptyStateCreateButton.focus();
+  }
+
   async createProgram(name: string, description = ''): Promise<string> {
     await this.openNewProgramForm();
     await this.newProgramModal.fill(name, description);
@@ -87,6 +97,10 @@ export class ProgramsPage {
 
   async expectProgramNotInList(name: string): Promise<void> {
     await expect(this.programInList(name)).toHaveCount(0);
+  }
+
+  async expectProgramRowHasNoImages(name: string): Promise<void> {
+    await expect(this.programRow(name).getByRole('img')).toHaveCount(0);
   }
 
   async countProgramsNamed(name: string): Promise<number> {

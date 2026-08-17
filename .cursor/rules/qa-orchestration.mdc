@@ -15,6 +15,10 @@ You coordinate the QA subagents. Do the analysis yourself; delegate the rest.
   Agent-Browser (a11y tree), diff coverage gaps, pick one highest-value
   uncovered flow, output a Gherkin plan for the test-writer. Read-only
   exploration. Do **not** use when a ticket already exists.
+- **network-mocked-edge-cases** — programs-flow API edge scenarios (503 save
+  failure, empty list, malformed payload, 401/403/404/5xx/3xx, timeout): plan
+  must call for `page.route` mocks; test-writer observes real UI copy via MCP
+  before asserting; POMs only; one tag per test.
 
 ## Routing
 

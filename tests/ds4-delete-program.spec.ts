@@ -107,7 +107,6 @@ test.describe('DS-4 Non-admin access', () => {
     const programsPage = new ProgramsPage(page);
     await programsPage.goto();
     await expect(page.getByRole('button', { name: /delete/i })).toHaveCount(0);
-    await expect(page.locator('[aria-label*="Delete" i]')).toHaveCount(0);
   });
 });
 

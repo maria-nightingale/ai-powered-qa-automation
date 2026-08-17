@@ -27,7 +27,15 @@ You author Playwright tests for Didaxis from a test plan.
    - `pom-conventions` — all UI interactions via Page Objects in `pages/`; no inline locators; assertions only in specs.
    - `playwright-test-cleanup` — unique `uniqueName()`/`Date.now()` data; import `test` from `fixtures/cleanup.fixture.ts`; `trackProgram(uuid)` for every created program.
    - `a11y-checks` — axe with `.withTags(['wcag2a','wcag2aa'])` + keyboard (tab → `toBeFocused()` → Enter opens dialog); POMs only; one tag per test; report real violations and stop — never `.disableRules()` to go green.
-   - `network-mocked-edge-cases` — for programs API edge cases (500/503/timeout/empty/malformed, plus 401/403/404/3xx): `page.route`, observe real UI copy first, POMs only, one tag per test.
+   - `network-mocked-edge-cases` — **mandatory** for programs-flow API edge cases.
+     Before any mock assertion: open the real Programs UI (Playwright MCP or
+     agent-browser) and record observed error/empty-state copy (or “renders
+     nothing”). Use `page.route` + `route.fulfill` for baseline cases:
+     (a) POST **503** save failure → UI error state, (b) GET **200** `[]` →
+     empty-state message, (c) **200** malformed body → app does not crash; also
+     **401/403/404/501/502/300/timeout** as the plan requires. Never mock the
+     endpoint under test. POMs only; one tag per test; flag missing POM locators
+     to the parent — do not inline.
 
 3. **Write the spec under `tests/`**
    - Name files `<ticket-key>-<short-topic>.spec.ts` (e.g. `ds1-create-program.spec.ts`).
