@@ -99,8 +99,12 @@ export class ProgramsPage {
     await expect(this.programInList(name)).toHaveCount(0);
   }
 
+  programInfoCell(name: string): Locator {
+    return this.programRow(name).getByRole('cell').first();
+  }
+
   async expectProgramRowHasNoImages(name: string): Promise<void> {
-    await expect(this.programRow(name).getByRole('img')).toHaveCount(0);
+    await expect(this.programInfoCell(name).getByRole('img')).toHaveCount(0);
   }
 
   async countProgramsNamed(name: string): Promise<number> {
