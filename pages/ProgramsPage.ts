@@ -10,6 +10,7 @@ export class ProgramsPage {
   readonly programsListView: Locator;
   readonly emptyStateMessage: Locator;
   readonly emptyStateCreatePrompt: Locator;
+  readonly emptyStateCreateButton: Locator;
   readonly emptyStateSuccessMessage: Locator;
   readonly programsLoadError: Locator;
 
@@ -25,6 +26,7 @@ export class ProgramsPage {
     this.emptyStateCreatePrompt = page
       .getByRole('main')
       .getByText(/create (your |the )?first program|get started|add your first program/i);
+    this.emptyStateCreateButton = page.getByRole('button', { name: 'Create Program' });
     this.emptyStateSuccessMessage = this.emptyStateMessage;
     this.programsLoadError = page
       .getByRole('alert')
@@ -63,6 +65,14 @@ export class ProgramsPage {
 
   async openNewProgramForm(): Promise<void> {
     await this.newProgramButton.click();
+  }
+
+  async openNewProgramFormFromEmptyState(): Promise<void> {
+    await this.emptyStateCreateButton.click();
+  }
+
+  async focusEmptyStateCreateButton(): Promise<void> {
+    await this.emptyStateCreateButton.focus();
   }
 
   async createProgram(name: string, description = ''): Promise<string> {
