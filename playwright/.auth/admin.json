@@ -1,0 +1,25 @@
+{
+  "cookies": [
+    {
+      "name": "didaxis_refresh_token",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMGFmYzFjYi1kNzJjLTQ1MmEtOTE0Yi1kMmYyYzVjYjNmODQiLCJvcmdJZCI6ImRjNGVmM2EyLWI0M2ItNGQyNC1hNGFjLTRkYmM4NzlmZDgwNyIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc4NjkyNTYyOCwiZXhwIjoxNzg3NTMwNDI4fQ.mEgmF4HwmeHTLq7TpzAkINF4Mrcn9REuetN0Zm8vXdg",
+      "domain": "test.didaxis.studio",
+      "path": "/api/auth",
+      "expires": 1787530428.730483,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://test.didaxis.studio",
+      "localStorage": [
+        {
+          "name": "didaxis_calendarSettings",
+          "value": "{\"visibleDays\":[0,1,2,3,4,5,6],\"startHour\":7,\"endHour\":24}"
+        }
+      ]
+    }
+  ]
+}

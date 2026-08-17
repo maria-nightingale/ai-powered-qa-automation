@@ -1,15 +1,36 @@
 import { expect, Locator, Page } from '@playwright/test';
+import { DeleteProgramDialog } from './DeleteProgramDialog';
 import { NewProgramModal } from './NewProgramModal';
 
 export class ProgramsPage {
   readonly page: Page;
   readonly newProgramButton: Locator;
   readonly newProgramModal: NewProgramModal;
+  readonly deleteProgramDialog: DeleteProgramDialog;
+  readonly programsListView: Locator;
+  readonly emptyStateMessage: Locator;
+  readonly emptyStateCreatePrompt: Locator;
+  readonly emptyStateCreateButton: Locator;
+  readonly emptyStateSuccessMessage: Locator;
+  readonly programsLoadError: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.newProgramModal = new NewProgramModal(page);
+    this.deleteProgramDialog = new DeleteProgramDialog(page);
     this.newProgramButton = page.getByRole('button', { name: /new program/i });
+    this.programsListView = page.getByRole('main');
+    this.emptyStateMessage = page.getByText(
+      /no programs (have been )?created|no programs yet|there are no programs/i,
+    );
+    this.emptyStateCreatePrompt = page
+      .getByRole('main')
+      .getByText(/create (your |the )?first program|get started|add your first program/i);
+    this.emptyStateCreateButton = page.getByRole('button', { name: 'Create Program' });
+    this.emptyStateSuccessMessage = this.emptyStateMessage;
+    this.programsLoadError = page
+      .getByRole('alert')
+      .or(page.getByText(/could not (be )?load|failed to load|unable to load|something went wrong|internal server error|error loading/i));
   }
 
   get dialog(): Locator {
@@ -46,6 +67,14 @@ export class ProgramsPage {
     await this.newProgramButton.click();
   }
 
+  async openNewProgramFormFromEmptyState(): Promise<void> {
+    await this.emptyStateCreateButton.click();
+  }
+
+  async focusEmptyStateCreateButton(): Promise<void> {
+    await this.emptyStateCreateButton.focus();
+  }
+
   async createProgram(name: string, description = ''): Promise<string> {
     await this.openNewProgramForm();
     await this.newProgramModal.fill(name, description);
@@ -70,6 +99,10 @@ export class ProgramsPage {
     await expect(this.programInList(name)).toHaveCount(0);
   }
 
+  async expectProgramRowHasNoImages(name: string): Promise<void> {
+    await expect(this.programRow(name).getByRole('img')).toHaveCount(0);
+  }
+
   async countProgramsNamed(name: string): Promise<number> {
     return this.programInList(name).count();
   }
@@ -87,6 +120,35 @@ export class ProgramsPage {
       .getByRole('button', { name: /edit/i })
       .or(row.locator('[aria-label*="Edit" i]'))
       .or(row.locator('button').filter({ has: this.page.locator('svg') }).last());
+  }
+
+  deleteButtonForProgram(name: string): Locator {
+    const row = this.programRow(name);
+    return row
+      .getByRole('button', { name: /delete/i })
+      .or(row.locator('[aria-label*="Delete" i]'));
+  }
+
+  async openDeleteConfirmation(programName: string): Promise<void> {
+    await this.expectProgramInList(programName);
+    await this.deleteButtonForProgram(programName).first().click();
+    await expect(this.deleteProgramDialog.dialog).toBeVisible();
+  }
+
+  async confirmDelete(): Promise<void> {
+    const deleteResponse = this.waitForProgramDelete();
+    await this.deleteProgramDialog.clickConfirm();
+    await deleteResponse;
+  }
+
+  async confirmDeleteAndClose(): Promise<void> {
+    await this.confirmDelete();
+    await expect(this.deleteProgramDialog.dialog).toBeHidden({ timeout: 15_000 });
+  }
+
+  async cancelDelete(): Promise<void> {
+    await this.deleteProgramDialog.clickCancel();
+    await expect(this.deleteProgramDialog.dialog).toBeHidden();
   }
 
   async openEditForm(programName: string): Promise<void> {
@@ -152,6 +214,13 @@ export class ProgramsPage {
         response.url().includes('/api/programs') &&
         response.request().method() === 'POST' &&
         response.ok(),
+    );
+  }
+
+  waitForProgramDelete() {
+    return this.page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/programs') && response.request().method() === 'DELETE',
     );
   }
 }

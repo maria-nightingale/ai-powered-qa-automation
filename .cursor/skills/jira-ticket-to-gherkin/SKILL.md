@@ -15,6 +15,12 @@ Generate reviewable test scenarios from a Jira ticket. The Gherkin output is a h
    - Cover every acceptance criterion with at least one Scenario
    - Add negative scenarios — what should NOT happen
    - Add edge-case scenarios — boundaries, empty inputs, duplicates, special characters, max length
+   - For **programs-flow API edges** (save failure, empty list, malformed response,
+     auth errors, upstream 5xx/3xx): annotate the scenario with
+     `# network-mock: observe UI via MCP before assert` and note the target
+     status (e.g. POST 503, GET 200 [], malformed JSON). Do not invent UI copy
+     in Gherkin — describe the observable outcome category (error state, empty
+     state, no crash).
 3. Write each scenario in Given / When / Then form. Given sets the starting state, When is the action under test, Then is the observable expected outcome.
 4. Group scenarios with comments: `# Happy paths`, `# Negative`, `# Edge cases`.
 5. Use real, specific values from the ticket — never placeholders.
