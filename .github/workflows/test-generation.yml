@@ -79,17 +79,17 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Generate reliability report
-        if: ${{ !cancelled() }}
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: bash scripts/generate-eval-report.sh --runs 10
+      # - name: Generate reliability report
+      #   if: ${{ !cancelled() }}
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GH_PAT }}
+      #   run: bash scripts/generate-eval-report.sh --runs 10
 
-      - name: Upload eval report
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: eval-report
-          path: eval-report.md
-          if-no-files-found: ignore
-          retention-days: 30
+      # - name: Upload eval report
+      #   if: ${{ !cancelled() }}
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: eval-report
+      #     path: eval-report.md
+      #     if-no-files-found: ignore
+      #     retention-days: 30
