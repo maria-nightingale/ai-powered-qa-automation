@@ -95,6 +95,17 @@ export default defineConfig({
       dependencies: ['setup'],
     },
     {
+      name: 'ds-215',
+      testMatch: /tests\/ds215-add-user\.spec\.ts/,
+      fullyParallel: false,
+      workers: 1,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/admin.json',
+      },
+      dependencies: ['setup'],
+    },
+    {
       name: 'chromium',
       testMatch: ['tests/**/*.spec.ts'],
       testIgnore: [
@@ -103,6 +114,7 @@ export default defineConfig({
         'tests/ds3-program-name-validation.spec.ts',
         'tests/ds4-delete-program.spec.ts',
         'tests/ds5-program-list-display.spec.ts',
+        'tests/ds215-add-user.spec.ts',
         '**/*.setup.ts',
       ],
       use: {

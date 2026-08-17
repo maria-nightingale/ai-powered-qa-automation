@@ -1,8 +1,10 @@
 import { test as base, expect } from '@playwright/test';
 import { getCleanupApiToken } from './program-api';
+import { deactivateUsers } from './user-api';
 
 type CleanupFixtures = {
   trackProgram: (uuid: string) => void;
+  trackUser: (uuid: string) => void;
 };
 
 export const test = base.extend<CleanupFixtures>({
@@ -38,6 +40,19 @@ export const test = base.extend<CleanupFixtures>({
         console.warn(`Failed to delete program ${uuid}:`, error);
       }
     }
+  },
+  trackUser: async ({}, use) => {
+    const ids: string[] = [];
+
+    await use((uuid: string) => {
+      ids.push(uuid);
+    });
+
+    if (ids.length === 0) {
+      return;
+    }
+
+    await deactivateUsers(ids);
   },
 });
 
