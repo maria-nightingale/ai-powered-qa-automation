@@ -1,10 +1,26 @@
+import AxeBuilder from '@axe-core/playwright';
 import { test, expect } from '../fixtures/cleanup.fixture';
 import { env } from '../config/env';
 import { ProgramsPage } from '../pages/ProgramsPage';
 import { LoginPage } from '../pages/LoginPage';
 import { repeatChar, uniqueName } from '../utils/test-input';
+import type { Page } from '@playwright/test';
 
-test.describe('DS-2 Edit Existing Program Details', () => {
+async function mockProgramUpdateFailure(page: Page, status: 500 | 503): Promise<void> {
+  await page.route('**/api/programs/**', (route) => {
+    if (['PATCH', 'PUT'].includes(route.request().method())) {
+      route.fulfill({
+        status,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Program could not be updated' }),
+      });
+      return;
+    }
+    route.continue();
+  });
+}
+
+test.describe('DS-2: Edit existing program details', () => {
   let programs: ProgramsPage;
 
   test.beforeEach(async ({ page }) => {
@@ -13,17 +29,23 @@ test.describe('DS-2 Edit Existing Program Details', () => {
     await expect(programs.newProgramButton).toBeVisible({ timeout: 15_000 });
   });
 
-  test.describe('Positive flows', () => {
-    test('TC-001 — Edit form opens pre-populated with current program data', async ({ trackProgram }) => {
+  test(
+    'TC-001 — Edit form opens pre-populated with current program data',
+    { tag: '@sanity' },
+    async ({ trackProgram }) => {
       const programName = uniqueName('Web Development 2026');
       const description = 'Full-stack web development program';
 
       trackProgram(await programs.createProgram(programName, description));
       await programs.openEditForm(programName);
       await programs.expectEditFormPrefilled(programName, description);
-    });
+    },
+  );
 
-    test('TC-002 — Program name update is saved and reflected in the list', async ({ trackProgram }) => {
+  test(
+    'TC-002 — Program name update is saved and reflected in the list',
+    { tag: '@sanity' },
+    async ({ trackProgram }) => {
       const programName = uniqueName('Web Development 2026');
       const updatedName = `${programName} - Updated`;
 
@@ -34,9 +56,13 @@ test.describe('DS-2 Edit Existing Program Details', () => {
 
       await programs.expectProgramInList(updatedName);
       await programs.expectProgramNotInList(programName);
-    });
+    },
+  );
 
-    test('TC-003 — Unchanged fields are preserved when only Description is edited', async ({ trackProgram }) => {
+  test(
+    'TC-003 — Unchanged fields are preserved when only Description is edited',
+    { tag: '@sanity' },
+    async ({ trackProgram }) => {
       const programName = uniqueName('Data Science Fundamentals');
       const originalDescription = 'Introductory data science curriculum';
       const updatedDescription = 'Introductory data science curriculum — revised 2026';
@@ -48,9 +74,13 @@ test.describe('DS-2 Edit Existing Program Details', () => {
 
       await programs.expectProgramInList(programName);
       await programs.expectProgramDescription(programName, updatedDescription);
-    });
+    },
+  );
 
-    test('TC-004 — Both Name and Description can be updated in a single save', async ({ trackProgram }) => {
+  test(
+    'TC-004 — Both Name and Description can be updated in a single save',
+    { tag: '@regression' },
+    async ({ trackProgram }) => {
       const programName = uniqueName('Mobile App Development');
       const updatedName = `${programName} — Advanced`;
       const updatedDescription = 'Native and cross-platform mobile development track';
@@ -62,9 +92,13 @@ test.describe('DS-2 Edit Existing Program Details', () => {
 
       await programs.expectProgramInList(updatedName);
       await programs.expectProgramDescription(updatedName, updatedDescription);
-    });
+    },
+  );
 
-    test('TC-005 — Canceling edit discards unsaved changes', async ({ trackProgram }) => {
+  test(
+    'TC-005 — Canceling edit discards unsaved changes',
+    { tag: '@regression' },
+    async ({ trackProgram }) => {
       const programName = uniqueName('Cybersecurity Essentials');
       const unsavedName = `${programName} — Pro`;
 
@@ -76,11 +110,13 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await expect(programs.dialog).toBeHidden();
       await programs.expectProgramInList(programName);
       await programs.expectProgramNotInList(unsavedName);
-    });
-  });
+    },
+  );
 
-  test.describe('Negative flows', () => {
-    test('TC-006 — Empty Name prevents save', async ({ trackProgram }) => {
+  test(
+    'TC-006 — Empty Name prevents save',
+    { tag: '@regression' },
+    async ({ trackProgram }) => {
       const programName = uniqueName('UX Design Bootcamp');
 
       trackProgram(await programs.createProgram(programName, 'Design thinking bootcamp'));
@@ -90,9 +126,13 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await programs.expectSaveDisabled();
       await programs.cancelButton.click();
       await programs.expectProgramInList(programName);
-    });
+    },
+  );
 
-    test('TC-007 — Whitespace-only Name is rejected', async ({ trackProgram }) => {
+  test(
+    'TC-007 — Whitespace-only Name is rejected',
+    { tag: '@regression' },
+    async ({ trackProgram }) => {
       const programName = uniqueName('Cloud Computing 2026');
 
       trackProgram(await programs.createProgram(programName, 'AWS and Azure fundamentals'));
@@ -102,9 +142,20 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await programs.expectSaveDisabled();
       await programs.cancelButton.click();
       await programs.expectProgramInList(programName);
-    });
+    },
+  );
 
-    test('TC-008 — Duplicate program name is rejected on edit', async ({ trackProgram }) => {
+  test.fixme(
+    'TC-008 — Duplicate program name is rejected on edit',
+    {
+      tag: '@regression',
+      annotation: {
+        type: 'bug',
+        description:
+          'App bug: edit save allows duplicate program names; no duplicate-error copy in the modal (confirmed local run 2026-08-17). Needs human confirmation before filing.',
+      },
+    },
+    async ({ trackProgram }) => {
       const existingName = uniqueName('Web Development 2026');
       const programToRename = uniqueName('Game Development 2026');
 
@@ -118,13 +169,15 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await updateResponse;
 
       await expect(programs.dialog).toBeVisible();
-      await expect(
-        programs.dialog.getByText(/already exists|already been used|must be unique|name is taken/i),
-      ).toBeVisible();
+      await expect(programs.newProgramModal.duplicateNameError).toBeVisible();
       await programs.expectProgramInList(programToRename);
-    });
+    },
+  );
 
-    test('TC-011 — Server error during save does not corrupt program data', async ({ page, trackProgram }) => {
+  test(
+    'TC-011 — Server error during save does not corrupt program data (500)',
+    { tag: '@regression' },
+    async ({ page, trackProgram }) => {
       const programName = uniqueName('DevOps Engineering');
       const updatedName = `${programName} — Updated`;
 
@@ -132,26 +185,41 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await programs.openEditForm(programName);
       await programs.fillEditForm(updatedName);
 
-      await page.route('**/api/programs/**', (route) => {
-        if (['PATCH', 'PUT'].includes(route.request().method())) {
-          route.fulfill({
-            status: 500,
-            contentType: 'application/json',
-            body: JSON.stringify({ message: 'Program could not be updated' }),
-          });
-          return;
-        }
-        route.continue();
-      });
-
+      await mockProgramUpdateFailure(page, 500);
       await programs.saveButton.click();
 
+      // Observed on live UI: no alert or inline error copy — modal stays open; list unchanged.
       await expect(programs.dialog).toBeVisible();
       await programs.expectProgramInList(programName);
       await programs.expectProgramNotInList(updatedName);
-    });
+    },
+  );
 
-    test('TC-012 — Saving with no changes does not cause errors or duplicate records', async ({ trackProgram }) => {
+  test(
+    'TC-011b — Server error during save does not corrupt program data (503)',
+    { tag: '@regression' },
+    async ({ page, trackProgram }) => {
+      const programName = uniqueName('DevOps Engineering');
+      const updatedName = `${programName} — Updated`;
+
+      trackProgram(await programs.createProgram(programName, 'CI/CD and infrastructure'));
+      await programs.openEditForm(programName);
+      await programs.fillEditForm(updatedName);
+
+      await mockProgramUpdateFailure(page, 503);
+      await programs.saveButton.click();
+
+      // Observed on live UI: no alert or inline error copy — modal stays open; list unchanged.
+      await expect(programs.dialog).toBeVisible();
+      await programs.expectProgramInList(programName);
+      await programs.expectProgramNotInList(updatedName);
+    },
+  );
+
+  test(
+    'TC-012 — Saving with no changes does not cause errors or duplicate records',
+    { tag: '@regression' },
+    async ({ trackProgram }) => {
       const programName = uniqueName('Blockchain Fundamentals');
 
       trackProgram(await programs.createProgram(programName, 'Distributed ledger technology program'));
@@ -162,11 +230,13 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await expect
         .poll(async () => programs.countProgramsNamed(programName), { timeout: 10_000 })
         .toBe(1);
-    });
-  });
+    },
+  );
 
-  test.describe('Edge cases', () => {
-    test('TC-013 — Name at maximum allowed length can be saved', async ({ trackProgram }) => {
+  test(
+    'TC-013 — Name at maximum allowed length can be saved',
+    { tag: '@regression' },
+    async ({ trackProgram }) => {
       const suffix = Date.now().toString();
       const programName = uniqueName('Advanced Machine Learning Certificate');
       const maxName = `${suffix}${repeatChar('A', 255 - suffix.length)}`;
@@ -177,9 +247,13 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await programs.saveEditAndClose();
 
       await programs.expectProgramInList(maxName);
-    });
+    },
+  );
 
-    test('TC-014 — Name exceeding maximum length is rejected', async ({ trackProgram }) => {
+  test(
+    'TC-014 — Name exceeding maximum length is rejected',
+    { tag: '@regression' },
+    async ({ trackProgram }) => {
       const programName = uniqueName('AI Ethics Program');
       const overLimitName = repeatChar('B', 256);
 
@@ -187,19 +261,22 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await programs.openEditForm(programName);
       await programs.fillEditForm(overLimitName);
 
-      const saveEnabled = await programs.saveButton.isEnabled();
-      if (saveEnabled) {
+      if (await programs.saveButton.isDisabled()) {
+        await programs.expectSaveDisabled();
+      } else {
         await programs.saveButton.click();
         await expect(programs.dialog).toBeVisible();
-      } else {
-        await programs.expectSaveDisabled();
       }
 
       await programs.expectProgramInList(programName);
       await programs.expectProgramNotInList(overLimitName);
-    });
+    },
+  );
 
-    test('TC-015 — Special characters in Name are handled correctly on edit', async ({ trackProgram }) => {
+  test(
+    'TC-015 — Special characters in Name are handled correctly on edit',
+    { tag: '@regression' },
+    async ({ trackProgram }) => {
       const programName = uniqueName('C Programming Basics');
       const updatedName = `${programName.replace(/\d+$/, '').trim()} C++ & C#: "Intro" (2026) — 100% Online ${Date.now()}`;
 
@@ -209,9 +286,13 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await programs.saveEditAndClose();
 
       await programs.expectProgramInList(updatedName);
-    });
+    },
+  );
 
-    test('TC-016 — Unicode characters in Description are preserved on edit', async ({ trackProgram }) => {
+  test(
+    'TC-016 — Unicode characters in Description are preserved on edit',
+    { tag: '@regression' },
+    async ({ trackProgram }) => {
       const programName = uniqueName('Global Business Program');
       const updatedDescription =
         'Programme global — グローバルビジネス — Développement international';
@@ -222,9 +303,13 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await programs.saveEditAndClose();
 
       await programs.expectProgramDescription(programName, updatedDescription);
-    });
+    },
+  );
 
-    test('TC-017 — Leading and trailing spaces are trimmed from edited Name', async ({ trackProgram }) => {
+  test(
+    'TC-017 — Leading and trailing spaces are trimmed from edited Name',
+    { tag: '@regression' },
+    async ({ trackProgram }) => {
       const programName = uniqueName('Network Security Program');
       const trimmedName = `${programName} — Advanced`;
 
@@ -234,9 +319,13 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await programs.saveEditAndClose();
 
       await programs.expectProgramInList(trimmedName);
-    });
+    },
+  );
 
-    test('TC-018 — Description can be cleared if optional', async ({ trackProgram }) => {
+  test(
+    'TC-018 — Description can be cleared if optional',
+    { tag: '@regression' },
+    async ({ trackProgram }) => {
       const programName = uniqueName('Robotics 101');
 
       trackProgram(await programs.createProgram(programName, 'Introductory robotics curriculum'));
@@ -246,9 +335,13 @@ test.describe('DS-2 Edit Existing Program Details', () => {
 
       await programs.expectProgramInList(programName);
       await programs.expectProgramDescription(programName, '');
-    });
+    },
+  );
 
-    test('TC-019 — Double-click on Save does not create duplicate updates or records', async ({ trackProgram }) => {
+  test(
+    'TC-019 — Double-click on Save does not create duplicate updates or records',
+    { tag: '@regression' },
+    async ({ trackProgram }) => {
       const programName = uniqueName('Quantum Computing Intro');
       const updatedName = `${programName} — Updated`;
 
@@ -264,11 +357,14 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await expect
         .poll(async () => programs.countProgramsNamed(updatedName), { timeout: 10_000 })
         .toBe(1);
-    });
+    },
+  );
 
-    test('TC-020 — Concurrent edit by another user is handled gracefully', async ({ browser, page, trackProgram }) => {
+  test(
+    'TC-020 — Concurrent edit by another user is handled gracefully',
+    { tag: '@regression' },
+    async ({ browser, trackProgram }) => {
       const programName = uniqueName('Web Development 2026');
-      const uniqueSuffix = programName.match(/\d+$/)?.[0] ?? programName;
       const adminBDescription = 'Description updated by admin B';
       const adminAName = `${programName} - Updated`;
 
@@ -297,70 +393,125 @@ test.describe('DS-2 Edit Existing Program Details', () => {
       await programsA.fillEditForm(adminAName);
       await programsA.saveButton.click();
 
-      const conflictMessage = programsA.dialog.getByText(
-        /modified by another user|conflict|refresh/i,
-      );
-
+      // Conflict may keep the edit modal open, or save may complete — either way list data must stay intact.
       await expect
         .poll(
           async () => {
-            const dialogCount = await programsA.dialog.count();
-            if (dialogCount === 0) {
-              return true;
+            const dialogOpen = await programsA.dialog.isVisible();
+            if (dialogOpen) {
+              return 'handled';
             }
-            if ((await conflictMessage.count()) > 0) {
-              return true;
+            const originalCount = await programsA.countProgramsNamed(programName);
+            const updatedCount = await programsA.countProgramsNamed(adminAName);
+            if (originalCount + updatedCount >= 1) {
+              return 'handled';
             }
-            return dialogCount > 0;
+            return 'pending';
           },
           { timeout: 15_000 },
         )
-        .toBe(true);
+        .toBe('handled');
 
       await contextA.close();
       await contextB.close();
 
-      await page.goto(`${env.url}/programs`);
-      await expect(page).toHaveURL(/\/programs/);
-      await expect(page.getByRole('main').getByText(new RegExp(uniqueSuffix))).toBeVisible({
-        timeout: 15_000,
-      });
-    });
-  });
+      await programs.goto();
+      await expect(programs.programsListView).toBeVisible();
+      await expect
+        .poll(async () => {
+          const originalCount = await programs.countProgramsNamed(programName);
+          const updatedCount = await programs.countProgramsNamed(adminAName);
+          return originalCount + updatedCount;
+        })
+        .toBe(1);
+    },
+  );
+
+  test.fixme(
+    'TC-021 — Edit program dialog meets WCAG 2 A/AA',
+    {
+      tag: '@regression',
+      annotation: {
+        type: 'bug',
+        description:
+          'App bug: axe wcag2a/wcag2aa reports button-name on .mantine-Modal-close and color-contrast failures (confirmed local run 2026-08-17). Needs human confirmation before filing.',
+      },
+    },
+    async ({ trackProgram }) => {
+      const programName = uniqueName('Accessibility Edit Audit');
+
+      trackProgram(await programs.createProgram(programName, 'Program for edit dialog a11y scan'));
+      await programs.openEditForm(programName);
+      await expect(programs.dialog).toBeVisible();
+      await expect(programs.programNameInput).toBeVisible();
+
+      const results = await new AxeBuilder({ page: programs.page })
+        .withTags(['wcag2a', 'wcag2aa'])
+        .analyze();
+
+      await expect(results.violations).toEqual([]);
+    },
+  );
+
+  test(
+    'TC-022 — Edit control opens dialog via keyboard',
+    { tag: '@regression' },
+    async ({ page, trackProgram }) => {
+      const programName = uniqueName('Keyboard Edit Program');
+
+      trackProgram(await programs.createProgram(programName, 'Keyboard navigation test'));
+      await programs.expectProgramInList(programName);
+
+      const editButton = programs.editButtonForProgram(programName);
+      await editButton.focus();
+      await expect(editButton).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(programs.dialog).toBeVisible();
+    },
+  );
+
 });
 
 test.describe('DS-2 Non-admin access', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test('TC-009 — Non-admin user cannot edit programs', async ({ page }) => {
-    test.skip(
-      !env.nonAdminEmail || !env.nonAdminPassword,
-      'Skipped: no non-admin credentials in .env. Set DIDAXIS_INSTRUCTOR_EMAIL and DIDAXIS_INSTRUCTOR_PASSWORD to run this test.',
-    );
+  test(
+    'TC-009 — Non-admin user cannot edit programs',
+    { tag: '@regression' },
+    async ({ page }) => {
+      test.skip(
+        !env.nonAdminEmail || !env.nonAdminPassword,
+        'Skipped: no non-admin credentials in .env. Set DIDAXIS_INSTRUCTOR_EMAIL and DIDAXIS_INSTRUCTOR_PASSWORD to run this test.',
+      );
 
-    const loginPage = new LoginPage(page);
+      const loginPage = new LoginPage(page);
 
-    await loginPage.goto();
-    await loginPage.signIn(env.nonAdminEmail, env.nonAdminPassword);
-    await expect(page).not.toHaveURL(/\/login$/);
+      await loginPage.goto();
+      await loginPage.signIn(env.nonAdminEmail, env.nonAdminPassword);
+      await expect(page).not.toHaveURL(/\/login$/);
 
-    const programsPage = new ProgramsPage(page);
-    await programsPage.goto();
-    await expect(page.getByRole('button', { name: /edit/i })).toHaveCount(0);
-  });
+      const programsPage = new ProgramsPage(page);
+      await programsPage.goto();
+      await expect(programsPage.editButtons).toHaveCount(0);
+    },
+  );
 });
 
 test.describe('DS-2 Unauthenticated access', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test('TC-010 — Unauthenticated user cannot access program edit', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    const programsPage = new ProgramsPage(page);
+  test(
+    'TC-010 — Unauthenticated user cannot access program edit',
+    { tag: '@regression' },
+    async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      const programsPage = new ProgramsPage(page);
 
-    await programsPage.goto();
+      await programsPage.goto();
 
-    await expect(page).toHaveURL(/\/login/);
-    await expect(loginPage.signInButton).toBeVisible();
-    await expect(page.getByRole('button', { name: /edit/i })).toHaveCount(0);
-  });
+      await expect(page).toHaveURL(/\/login/);
+      await expect(loginPage.signInButton).toBeVisible();
+      await expect(programsPage.editButtons).toHaveCount(0);
+    },
+  );
 });

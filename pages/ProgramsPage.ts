@@ -13,12 +13,14 @@ export class ProgramsPage {
   readonly emptyStateCreateButton: Locator;
   readonly emptyStateSuccessMessage: Locator;
   readonly programsLoadError: Locator;
+  readonly editButtons: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.newProgramModal = new NewProgramModal(page);
     this.deleteProgramDialog = new DeleteProgramDialog(page);
     this.newProgramButton = page.getByRole('button', { name: /new program/i });
+    this.editButtons = page.getByRole('button', { name: /^Edit /i });
     this.programsListView = page.getByRole('main');
     this.emptyStateMessage = page.getByText(
       /no programs (have been )?created|no programs yet|there are no programs/i,
@@ -119,11 +121,7 @@ export class ProgramsPage {
   }
 
   editButtonForProgram(name: string): Locator {
-    const row = this.programRow(name);
-    return row
-      .getByRole('button', { name: /edit/i })
-      .or(row.locator('[aria-label*="Edit" i]'))
-      .or(row.locator('button').filter({ has: this.page.locator('svg') }).last());
+    return this.programRow(name).getByRole('button', { name: new RegExp(`^Edit ${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`) });
   }
 
   deleteButtonForProgram(name: string): Locator {
